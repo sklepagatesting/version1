@@ -51,4 +51,19 @@ document.addEventListener('fontLoadedAndPageVisible', () => {
 
   document.querySelectorAll('.text-container').forEach(container => {
     observer.observe(container);
+
   });
+
+
+
+
+ function setMobileVh() {
+    const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+    if (!isMobile) return;
+
+    const vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+  }
+
+  window.addEventListener('DOMContentLoaded', setMobileVh);
+  window.addEventListener('resize', setMobileVh);
