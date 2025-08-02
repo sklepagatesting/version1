@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
   scroller.innerHTML += scroller.innerHTML;
 
   const scrollWidth = scroller.scrollWidth / 2;
-  const initialOffset = 25;
+  const initialOffset = 30;
   let position = initialOffset;
   let velocity = 0;
 
