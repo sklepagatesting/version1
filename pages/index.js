@@ -7,7 +7,13 @@ document.addEventListener("DOMContentLoaded", () => {
   scroller.innerHTML += scroller.innerHTML;
 
   const scrollWidth = scroller.scrollWidth / 2;
-  const initialOffset = 35;
+
+  // Dynamically align first card with correct margin
+  const firstCard = scroller.children[0];
+  const cardStyle = window.getComputedStyle(firstCard);
+  const marginRight = parseFloat(cardStyle.marginRight);
+  const initialOffset = marginRight;
+
   let position = initialOffset;
   let velocity = 0;
 
