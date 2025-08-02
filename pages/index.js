@@ -3,14 +3,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const scroller = document.getElementById("scroller");
 
-  // Duplicate content once to create the illusion of a seamless loop
+  // Duplicate content for seamless scroll
   scroller.innerHTML += scroller.innerHTML;
 
   const scrollWidth = scroller.scrollWidth / 2;
   const offset = 25;
   let position = offset;
   let velocity = 0;
-  let startX; // For tracking the initial touch position
 
   // Set initial position
   gsap.set(scroller, { x: offset });
@@ -18,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const fastDuration = 2;
   const fastDistance = scrollWidth * 1.5;
 
-  // Animate in and sync position
+  // Intro animation
   gsap.to(scroller, {
     x: `-=${fastDistance}`,
     duration: fastDuration,
@@ -31,47 +30,42 @@ document.addEventListener("DOMContentLoaded", () => {
       })
     },
     onUpdate() {
-      // Sync internal `position` with GSAP's current x
-      const transform = gsap.getProperty(scroller, "x");
-      position = parseFloat(transform);
+      position = parseFloat(gsap.getProperty(scroller, "x"));
     }
   });
 
-  // Mouse/trackpad wheel input listener
+  // --- Mouse Wheel Scroll ---
   window.addEventListener("wheel", (e) => {
     velocity += e.deltaY * 0.05;
   }, { passive: true });
 
-  // -- Touch Input Listeners --
-  scroller.addEventListener("touchstart", (e) => {
-    // Record the starting touch position
-    startX = e.touches[0].clientX;
-    velocity = 0; // Stop any existing momentum
+  // --- Touch Input on Entire Viewport ---
+  let startY;
+
+  window.addEventListener("touchstart", (e) => {
+    startY = e.touches[0].clientY;
+    velocity = 0;
   }, { passive: true });
 
-  scroller.addEventListener("touchmove", (e) => {
-    const currentX = e.touches[0].clientX;
-    const deltaX = currentX - startX;
-    
-    // Update velocity based on the horizontal drag amount
-    // You may need to adjust the multiplier for sensitivity
-    velocity = deltaX * 0.5;
+  window.addEventListener("touchmove", (e) => {
+    const currentY = e.touches[0].clientY;
+    const deltaY = currentY - startY;
 
-    // Update the starting position for the next touchmove event
-    startX = currentX;
-  }, { passive: true });
+    // Treat vertical swipe like mouse wheel scroll
+    velocity += -deltaY * 0.05;
 
-  scroller.addEventListener("touchend", () => {
-    // The velocity will now decay naturally in the ticker loop
-  });
+    startY = currentY;
 
-  // Continuous loop
+    // Optional: prevent vertical scroll (uncomment to block)
+    // e.preventDefault();
+  }, { passive: true }); // Change to false if using preventDefault()
+
+  // --- GSAP Ticker: Scroll Loop ---
   gsap.ticker.add(() => {
     if (Math.abs(velocity) > 0.001) {
       position -= velocity;
       velocity *= 0.94;
 
-      // Check for boundaries and teleport
       if (position <= -scrollWidth + offset) {
         position += scrollWidth;
       }
