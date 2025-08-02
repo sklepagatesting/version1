@@ -28,41 +28,29 @@ document.addEventListener("DOMContentLoaded", () => {
     willChange: "transform"
   });
 
-  // 👇 Apply "low-res" visual effect (CSS-based) before animation
-  const imgs = scroller.getElementsByTagName("img");
-  Array.from(imgs).forEach(img => {
-    img.style.filter = "blur(5px) brightness(0.8)";
-    img.style.imageRendering = "pixelated"; // fake low-res effect
-  });
-
-  // Warm-up layout
-  Array.from(cards).forEach(card => {
-    card.offsetHeight;
-    card.style.willChange = "transform";
-  });
-
   // Intro animation after 3 seconds
   setTimeout(() => {
-    const fastDuration = 2;
-    const fastDistance = scrollWidth * 1.5;
+    const fastDuration = 2 / 3; // 3x faster
+    const cardWidth = cards[0].offsetWidth;
+    const firstCardOffset = initialOffset % scrollWidth;
+
+    // Scroll enough to land the next copy's first card at exact same offset
+    // Ensure ending with first card aligned at 25px
+    const fastDistance = scrollWidth - firstCardOffset;
 
     const tl = gsap.timeline({
       onComplete: () => {
-        position = parseFloat(gsap.getProperty(scroller, "x"));
+        position = initialOffset;
+        gsap.set(scroller, { x: position }); // hard-set to ensure exact alignment
         scroller.style.height = "";
         scroller.style.overflow = "";
-
-        // ✅ Remove blur and restore image rendering
-        Array.from(imgs).forEach(img => {
-          img.style.filter = "";
-          img.style.imageRendering = "";
-        });
       }
     });
 
+    // Scale grow + scroll
     tl.to(cards, {
       scaleY: 1,
-      duration: 1,
+      duration: 0.33,
       ease: "power2.out"
     }, 0);
 
@@ -73,12 +61,12 @@ document.addEventListener("DOMContentLoaded", () => {
       modifiers: {
         x: gsap.utils.unitize(x => {
           const raw = parseFloat(x);
-          const looped = raw % scrollWidth;
+          const looped = ((raw % scrollWidth) + scrollWidth) % scrollWidth;
           return looped;
         })
       }
     }, 0);
-  }, 3000);
+  }, 2000);
 
   // Wheel input
   window.addEventListener("wheel", (e) => {
@@ -110,26 +98,20 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }, { passive: false });
 
-  // Continuous scroll logic (optimized ticker)
-  let isTicking = true;
+  // Continuous scroll logic
   gsap.ticker.add(() => {
     if (Math.abs(velocity) > 0.001) {
       position -= velocity;
       velocity *= 0.94;
 
-      // Fake scroll bump near edges to prevent jump
-      const edgeBuffer = 60;
-      if (position > -edgeBuffer || position < -(scrollWidth - edgeBuffer)) {
-        velocity += (Math.random() - 0.5) * 0.4;
+      if (position <= -scrollWidth) {
+        position += scrollWidth;
+      }
+      if (position >= 0) {
+        position -= scrollWidth;
       }
 
-      if (position <= -scrollWidth) position += scrollWidth;
-      if (position >= 0) position -= scrollWidth;
-
       gsap.set(scroller, { x: position });
-      isTicking = true;
-    } else if (isTicking) {
-      isTicking = false;
     }
   });
 });
