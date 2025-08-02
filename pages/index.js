@@ -28,6 +28,19 @@ document.addEventListener("DOMContentLoaded", () => {
     willChange: "transform"
   });
 
+  // 👇 Apply "low-res" visual effect (CSS-based) before animation
+  const imgs = scroller.getElementsByTagName("img");
+  Array.from(imgs).forEach(img => {
+    img.style.filter = "blur(5px) brightness(0.8)";
+    img.style.imageRendering = "pixelated"; // fake low-res effect
+  });
+
+  // Warm-up layout
+  Array.from(cards).forEach(card => {
+    card.offsetHeight;
+    card.style.willChange = "transform";
+  });
+
   // Intro animation after 3 seconds
   setTimeout(() => {
     const fastDuration = 2;
@@ -36,12 +49,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const tl = gsap.timeline({
       onComplete: () => {
         position = parseFloat(gsap.getProperty(scroller, "x"));
-        scroller.style.height = ""; // release height lock
-        scroller.style.overflow = ""; // restore default
+        scroller.style.height = "";
+        scroller.style.overflow = "";
+
+        // ✅ Remove blur and restore image rendering
+        Array.from(imgs).forEach(img => {
+          img.style.filter = "";
+          img.style.imageRendering = "";
+        });
       }
     });
 
-    // Fast scroll + scaleY grow together
     tl.to(cards, {
       scaleY: 1,
       duration: 1,
@@ -60,7 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
         })
       }
     }, 0);
-  }, 2000);
+  }, 3000);
 
   // Wheel input
   window.addEventListener("wheel", (e) => {
@@ -92,20 +110,26 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }, { passive: false });
 
-  // Continuous scroll logic
+  // Continuous scroll logic (optimized ticker)
+  let isTicking = true;
   gsap.ticker.add(() => {
     if (Math.abs(velocity) > 0.001) {
       position -= velocity;
       velocity *= 0.94;
 
-      if (position <= -scrollWidth) {
-        position += scrollWidth;
-      }
-      if (position >= 0) {
-        position -= scrollWidth;
+      // Fake scroll bump near edges to prevent jump
+      const edgeBuffer = 60;
+      if (position > -edgeBuffer || position < -(scrollWidth - edgeBuffer)) {
+        velocity += (Math.random() - 0.5) * 0.4;
       }
 
+      if (position <= -scrollWidth) position += scrollWidth;
+      if (position >= 0) position -= scrollWidth;
+
       gsap.set(scroller, { x: position });
+      isTicking = true;
+    } else if (isTicking) {
+      isTicking = false;
     }
   });
 });
