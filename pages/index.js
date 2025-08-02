@@ -1,111 +1,195 @@
 document.addEventListener("DOMContentLoaded", () => {
-  gsap.registerPlugin(ModifiersPlugin);
 
-  const scroller = document.getElementById("scroller");
+gsap.registerPlugin(ModifiersPlugin);
 
-  // Duplicate for seamless loop
-  scroller.innerHTML += scroller.innerHTML;
+const scroller = document.getElementById("scroller");
 
-  const scrollWidth = scroller.scrollWidth / 2;
-  const initialOffset = 25;
-  let position = initialOffset;
-  let velocity = 0;
+// Duplicate for seamless loop
 
-  // Set initial scroll position
-  gsap.set(scroller, { x: initialOffset });
+scroller.innerHTML += scroller.innerHTML;
 
-  const cards = scroller.children;
+const scrollWidth = scroller.scrollWidth / 2;
 
-  // Prevent scroller from collapsing
-  const cardHeight = cards[0].offsetHeight;
-  scroller.style.height = cardHeight + "px";
-  scroller.style.overflow = "hidden";
+const initialOffset = 25;
 
-  // Set initial card state (GPU-friendly)
-  gsap.set(cards, {
-    scaleY: 0,
-    transformOrigin: "bottom right",
-    willChange: "transform"
-  });
+let position = initialOffset;
 
-  // Intro animation after 3 seconds
-  setTimeout(() => {
-    const fastDuration = 2;
-    const fastDistance = scrollWidth * 1.5;
+let velocity = 0;
 
-    const tl = gsap.timeline({
-      onComplete: () => {
-        position = parseFloat(gsap.getProperty(scroller, "x"));
-        scroller.style.height = ""; // release height lock
-        scroller.style.overflow = ""; // restore default
-      }
-    });
+// Set initial scroll position
 
-    // Fast scroll + scaleY grow together
-    tl.to(cards, {
-      scaleY: 1,
-      duration: 1,
-      ease: "power2.out"
-    }, 0);
+gsap.set(scroller, { x: initialOffset });
 
-    tl.to(scroller, {
-      x: -=${fastDistance},
-      duration: fastDuration,
-      ease: "power4.out",
-      modifiers: {
-        x: gsap.utils.unitize(x => {
-          const raw = parseFloat(x);
-          const looped = raw % scrollWidth;
-          return looped;
-        })
-      }
-    }, 0);
-  }, 2000);
+const cards = scroller.children;
 
-  // Wheel input
-  window.addEventListener("wheel", (e) => {
-    velocity += e.deltaY * 0.05;
-  }, { passive: true });
+// Prevent scroller from collapsing
 
-  // Touch input
-  const touchScrollMultiplier = 0.17;
-  let startY;
-  let isDraggingDown = false;
+const cardHeight = cards[0].offsetHeight;
 
-  window.addEventListener("touchstart", (e) => {
-    startY = e.touches[0].clientY;
-    velocity = 0;
-    isDraggingDown = false;
-  }, { passive: true });
+scroller.style.height = cardHeight + "px";
 
-  window.addEventListener("touchmove", (e) => {
-    const currentY = e.touches[0].clientY;
-    const deltaY = currentY - startY;
+scroller.style.overflow = "hidden";
 
-    if (deltaY > 0) isDraggingDown = true;
+// Set initial card state (GPU-friendly)
 
-    velocity += -deltaY * touchScrollMultiplier;
-    startY = currentY;
+gsap.set(cards, {
 
-    if (window.scrollY === 0 && isDraggingDown) {
-      e.preventDefault();
-    }
-  }, { passive: false });
+scaleY: 0,
 
-  // Continuous scroll logic
-  gsap.ticker.add(() => {
-    if (Math.abs(velocity) > 0.001) {
-      position -= velocity;
-      velocity *= 0.94;
+transformOrigin: "bottom right",
 
-      if (position <= -scrollWidth) {
-        position += scrollWidth;
-      }
-      if (position >= 0) {
-        position -= scrollWidth;
-      }
+willChange: "transform"
 
-      gsap.set(scroller, { x: position });
-    }
-  });
+});
+
+// Intro animation after 3 seconds
+
+setTimeout(() => {
+
+const fastDuration = 2;
+
+const fastDistance = scrollWidth * 1.5;
+
+
+
+const tl = gsap.timeline({
+
+  onComplete: () => {
+
+    position = parseFloat(gsap.getProperty(scroller, "x"));
+
+    scroller.style.height = ""; // release height lock
+
+    scroller.style.overflow = ""; // restore default
+
+  }
+
+});
+
+
+
+// Fast scroll + scaleY grow together
+
+tl.to(cards, {
+
+  scaleY: 1,
+
+  duration: 1,
+
+  ease: "power2.out"
+
+}, 0);
+
+
+
+tl.to(scroller, {
+
+  x: `-=${fastDistance}`,
+
+  duration: fastDuration,
+
+  ease: "power4.out",
+
+  modifiers: {
+
+    x: gsap.utils.unitize(x => {
+
+      const raw = parseFloat(x);
+
+      const looped = raw % scrollWidth;
+
+      return looped;
+
+    })
+
+  }
+
+}, 0);
+
+}, 2000);
+
+// Wheel input
+
+window.addEventListener("wheel", (e) => {
+
+velocity += e.deltaY * 0.05;
+
+}, { passive: true });
+
+// Touch input
+
+const touchScrollMultiplier = 0.12;
+
+let startY;
+
+let isDraggingDown = false;
+
+window.addEventListener("touchstart", (e) => {
+
+startY = e.touches[0].clientY;
+
+velocity = 0;
+
+isDraggingDown = false;
+
+}, { passive: true });
+
+window.addEventListener("touchmove", (e) => {
+
+const currentY = e.touches[0].clientY;
+
+const deltaY = currentY - startY;
+
+
+
+if (deltaY > 0) isDraggingDown = true;
+
+
+
+velocity += -deltaY * touchScrollMultiplier;
+
+startY = currentY;
+
+
+
+if (window.scrollY === 0 && isDraggingDown) {
+
+  e.preventDefault();
+
+}
+
+}, { passive: false });
+
+// Continuous scroll logic
+
+gsap.ticker.add(() => {
+
+if (Math.abs(velocity) > 0.001) {
+
+  position -= velocity;
+
+  velocity *= 0.94;
+
+
+
+  if (position <= -scrollWidth) {
+
+    position += scrollWidth;
+
+  }
+
+  if (position >= 0) {
+
+    position -= scrollWidth;
+
+  }
+
+
+
+  gsap.set(scroller, { x: position });
+
+}
+
+});
+
 });
