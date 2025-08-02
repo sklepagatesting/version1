@@ -123,57 +123,141 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
-
 const currentImage = document.getElementById("image-current");
 const nextImage = document.getElementById("image-next");
 const titles = document.querySelectorAll(".article-title");
 
 let lastSrc = currentImage.src;
-let isAnimating = false;
+let lastHovered = null;
+let lastMoveTime = performance.now();
+let lastX = 0;
+let lastY = 0;
 
-titles.forEach(title => {
-  title.addEventListener("mouseenter", () => {
-    const newSrc = title.dataset.img;
+document.addEventListener("mousemove", (e) => {
+  const now = performance.now();
+  const dx = e.clientX - lastX;
+  const dy = e.clientY - lastY;
+  const dt = now - lastMoveTime;
 
-    if (!newSrc || newSrc === lastSrc || isAnimating) return;
+  const distance = Math.sqrt(dx * dx + dy * dy);
+  const speed = distance / dt; // pixels/ms
 
-    isAnimating = true;
-    lastSrc = newSrc;
+  lastX = e.clientX;
+  lastY = e.clientY;
+  lastMoveTime = now;
 
-    // Prepare next image
-    nextImage.src = newSrc;
-    gsap.set(nextImage, {
-      scale: 1.1,
-      opacity: 0,
-      zIndex: 2,
-    });
+  const hovered = [...titles].find(title => title.contains(e.target));
+  if (!hovered || hovered === lastHovered) return;
 
-    gsap.set(currentImage, {
-      zIndex: 1
-    });
+  const newSrc = hovered.dataset.img;
+  if (!newSrc || newSrc === lastSrc) return;
 
-    // Animate next image to zoom out and fade in
-    gsap.to(nextImage, {
-      opacity: 1,
-      scale: 1,
-      duration: 0.4,
-      ease: "power2.out",
-      onComplete: () => {
-        // Swap roles
-        currentImage.src = newSrc;
+  lastSrc = newSrc;
+  lastHovered = hovered;
 
-        // Reset nextImage immediately after transition
-        gsap.set(nextImage, {
-          opacity: 0,
-          scale: 1.1
-        });
+  gsap.killTweensOf([currentImage, nextImage]);
 
-        isAnimating = false;
-      }
-    });
+  // Choose duration based on speed
+  const fastThreshold = 0.5; // ~0.5 pixels/ms
+  const duration = speed > fastThreshold ? 0.15 : 0.4;
+
+  // Prepare and animate
+  nextImage.src = newSrc;
+  gsap.set(nextImage, {
+    scale: 1.1,
+    opacity: 0,
+    zIndex: 2
+  });
+
+  gsap.set(currentImage, {
+    zIndex: 1
+  });
+
+  gsap.to(nextImage, {
+    opacity: 1,
+    scale: 1,
+    duration,
+    ease: "power2.out",
+    onComplete: () => {
+      currentImage.src = newSrc;
+      gsap.set(nextImage, {
+        opacity: 0,
+        scale: 1.1
+      });
+    }
   });
 });
 
-// Initial states
+// Initial state
 gsap.set(currentImage, { scale: 1.1, opacity: 1, zIndex: 1 });
 gsap.set(nextImage, { scale: 1.1, opacity: 0, zIndex: 2 });
+
+
+
+
+
+
+
+let isAnimating = false;
+
+// Core hover logic — used for both desktop and mobile
+function handleTitleHover(title, speed = 0.5) {
+  const newSrc = title.dataset.img;
+  if (!newSrc || currentImage.src === newSrc || isAnimating) return;
+
+  isAnimating = true;
+  nextImage.src = newSrc;
+  nextImage.style.opacity = 1;
+  nextImage.style.transform = "scale(1.1)";
+  currentImage.style.transform = "scale(1)";
+
+  gsap.to(currentImage, {
+    opacity: 0,
+    scale: 1.05,
+    duration: speed,
+    ease: "power2.out"
+  });
+
+  gsap.to(nextImage, {
+    opacity: 1,
+    scale: 1,
+    duration: speed,
+    ease: "power2.out",
+    onComplete: () => {
+      currentImage.src = newSrc;
+      currentImage.style.opacity = 1;
+      nextImage.style.opacity = 0;
+      isAnimating = false;
+    }
+  });
+
+  lastSrc = newSrc;
+}
+
+// Desktop hover
+titles.forEach(title => {
+  title.addEventListener("mouseenter", () => {
+    handleTitleHover(title); // normal speed
+  });
+});
+
+// Mobile scroll/select support
+if ("ontouchstart" in window || navigator.maxTouchPoints > 0) {
+  window.addEventListener("scroll", () => {
+    const viewportHeight = window.innerHeight;
+    let activeTitle = null;
+
+    titles.forEach(title => {
+      const rect = title.getBoundingClientRect();
+      const midPoint = rect.top + rect.height / 2;
+
+      if (midPoint > 0 && midPoint < viewportHeight) {
+        activeTitle = title;
+      }
+    });
+
+    if (activeTitle) {
+      handleTitleHover(activeTitle, 0.2); // faster speed for fast scroll
+    }
+  }, { passive: true });
+}
