@@ -57,13 +57,17 @@ document.addEventListener('fontLoadedAndPageVisible', () => {
 
 
 
- function setMobileVh() {
-    const isMobile = /Mobi|Android/i.test(navigator.userAgent);
-    if (!isMobile) return;
+
+function isMobileDevice() {
+    return /Mobi|Android|iPhone|iPad|Tablet|Touch/i.test(navigator.userAgent);
+  }
+
+  function setMobileViewportHeight() {
+    if (!isMobileDevice()) return;
 
     const vh = window.innerHeight * 0.01;
     document.documentElement.style.setProperty('--vh', `${vh}px`);
   }
 
-  window.addEventListener('DOMContentLoaded', setMobileVh);
-  window.addEventListener('resize', setMobileVh);
+  window.addEventListener('DOMContentLoaded', setMobileViewportHeight);
+  window.addEventListener('resize', setMobileViewportHeight);
