@@ -3,7 +3,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const scroller = document.getElementById("scroller");
 
-  // Duplicate content for seamless scroll
   scroller.innerHTML += scroller.innerHTML;
 
   const scrollWidth = scroller.scrollWidth / 2;
@@ -11,13 +10,11 @@ document.addEventListener("DOMContentLoaded", () => {
   let position = offset;
   let velocity = 0;
 
-  // Set initial position
   gsap.set(scroller, { x: offset });
 
   const fastDuration = 2;
   const fastDistance = scrollWidth * 1.5;
 
-  // Intro animation
   gsap.to(scroller, {
     x: `-=${fastDistance}`,
     duration: fastDuration,
@@ -34,33 +31,38 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // --- Mouse Wheel Scroll ---
+  // Mouse wheel input
   window.addEventListener("wheel", (e) => {
     velocity += e.deltaY * 0.05;
   }, { passive: true });
 
-  // --- Touch Input on Entire Viewport ---
+  // --- Touch Swipe Logic ---
+  const touchScrollMultiplier = 0.12; // Increase for more sensitivity
   let startY;
+  let isDraggingDown = false;
 
   window.addEventListener("touchstart", (e) => {
     startY = e.touches[0].clientY;
     velocity = 0;
+    isDraggingDown = false;
   }, { passive: true });
 
   window.addEventListener("touchmove", (e) => {
     const currentY = e.touches[0].clientY;
     const deltaY = currentY - startY;
 
-    // Treat vertical swipe like mouse wheel scroll
-    velocity += -deltaY * 0.05;
+    if (deltaY > 0) isDraggingDown = true;
 
+    velocity += -deltaY * touchScrollMultiplier;
     startY = currentY;
 
-    // Optional: prevent vertical scroll (uncomment to block)
-    // e.preventDefault();
-  }, { passive: true }); // Change to false if using preventDefault()
+    // Prevent pull-to-refresh if at the top of the page and swiping down
+    if (window.scrollY === 0 && isDraggingDown) {
+      e.preventDefault();
+    }
+  }, { passive: false });
 
-  // --- GSAP Ticker: Scroll Loop ---
+  // GSAP ticker loop
   gsap.ticker.add(() => {
     if (Math.abs(velocity) > 0.001) {
       position -= velocity;
