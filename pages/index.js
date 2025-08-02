@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }, { passive: true });
 
   // --- Touch Swipe Logic ---
-  const touchScrollMultiplier = 0.3; // Increase for more sensitivity
+  const touchScrollMultiplier = 0.2; // Increase for more sensitivity
   let startY;
   let isDraggingDown = false;
 
