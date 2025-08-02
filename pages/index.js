@@ -60,7 +60,7 @@ document.addEventListener("DOMContentLoaded", () => {
         })
       }
     }, 0);
-  }, 1500);
+  }, 2000);
 
   // Wheel input
   window.addEventListener("wheel", (e) => {
