@@ -1,4 +1,4 @@
-Document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", () => {
   gsap.registerPlugin(ModifiersPlugin);
 
   const scroller = document.getElementById("scroller");
@@ -35,10 +35,7 @@ Document.addEventListener("DOMContentLoaded", () => {
 
     const tl = gsap.timeline({
       onComplete: () => {
-        // Set the initial position after the intro animation finishes
-        position = parseFloat(gsap.getProperty(scroller, "x")) % scrollWidth;
-        if (position > 0) position -= scrollWidth;
-
+        position = parseFloat(gsap.getProperty(scroller, "x"));
         scroller.style.height = ""; // release height lock
         scroller.style.overflow = ""; // restore default
       }
@@ -51,11 +48,17 @@ Document.addEventListener("DOMContentLoaded", () => {
       ease: "power2.out"
     }, 0);
 
-    // Removed the 'modifiers' from this part
     tl.to(scroller, {
       x: `-=${fastDistance}`,
       duration: fastDuration,
       ease: "power4.out",
+      modifiers: {
+        x: gsap.utils.unitize(x => {
+          const raw = parseFloat(x);
+          const looped = raw % scrollWidth;
+          return looped;
+        })
+      }
     }, 0);
   }, 2000);
 
@@ -95,7 +98,6 @@ Document.addEventListener("DOMContentLoaded", () => {
       position -= velocity;
       velocity *= 0.94;
 
-      // This logic will now work correctly after the intro animation
       if (position <= -scrollWidth) {
         position += scrollWidth;
       }
