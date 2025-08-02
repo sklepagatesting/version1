@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", () => {
+Document.addEventListener("DOMContentLoaded", () => {
   gsap.registerPlugin(ModifiersPlugin);
 
   const scroller = document.getElementById("scroller");
@@ -30,27 +30,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Intro animation after 3 seconds
   setTimeout(() => {
-    const fastDuration = 2 / 3; // 3x faster
-    const cardWidth = cards[0].offsetWidth;
-    const firstCardOffset = initialOffset % scrollWidth;
-
-    // Scroll enough to land the next copy's first card at exact same offset
-    // Ensure ending with first card aligned at 25px
-    const fastDistance = scrollWidth - firstCardOffset;
+    const fastDuration = 2;
+    const fastDistance = scrollWidth * 1.5;
 
     const tl = gsap.timeline({
       onComplete: () => {
-        position = initialOffset;
-        gsap.set(scroller, { x: position }); // hard-set to ensure exact alignment
-        scroller.style.height = "";
-        scroller.style.overflow = "";
+        position = parseFloat(gsap.getProperty(scroller, "x"));
+        scroller.style.height = ""; // release height lock
+        scroller.style.overflow = ""; // restore default
       }
     });
 
-    // Scale grow + scroll
+    // Fast scroll + scaleY grow together
     tl.to(cards, {
       scaleY: 1,
-      duration: 0.33,
+      duration: 1,
       ease: "power2.out"
     }, 0);
 
@@ -61,7 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
       modifiers: {
         x: gsap.utils.unitize(x => {
           const raw = parseFloat(x);
-          const looped = ((raw % scrollWidth) + scrollWidth) % scrollWidth;
+          const looped = raw % scrollWidth;
           return looped;
         })
       }
@@ -104,10 +98,11 @@ document.addEventListener("DOMContentLoaded", () => {
       position -= velocity;
       velocity *= 0.94;
 
+      // New logic for looping and landing on the first card
+      // We check if the position is out of bounds and adjust it smoothly
       if (position <= -scrollWidth) {
         position += scrollWidth;
-      }
-      if (position >= 0) {
+      } else if (position >= 0) {
         position -= scrollWidth;
       }
 
