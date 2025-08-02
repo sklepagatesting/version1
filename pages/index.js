@@ -10,6 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const offset = 25;
   let position = offset;
   let velocity = 0;
+  let startX; // For tracking the initial touch position
 
   // Set initial position
   gsap.set(scroller, { x: offset });
@@ -36,10 +37,33 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Scroll input listener
+  // Mouse/trackpad wheel input listener
   window.addEventListener("wheel", (e) => {
     velocity += e.deltaY * 0.05;
   }, { passive: true });
+
+  // -- Touch Input Listeners --
+  scroller.addEventListener("touchstart", (e) => {
+    // Record the starting touch position
+    startX = e.touches[0].clientX;
+    velocity = 0; // Stop any existing momentum
+  }, { passive: true });
+
+  scroller.addEventListener("touchmove", (e) => {
+    const currentX = e.touches[0].clientX;
+    const deltaX = currentX - startX;
+    
+    // Update velocity based on the horizontal drag amount
+    // You may need to adjust the multiplier for sensitivity
+    velocity = deltaX * 0.5;
+
+    // Update the starting position for the next touchmove event
+    startX = currentX;
+  }, { passive: true });
+
+  scroller.addEventListener("touchend", () => {
+    // The velocity will now decay naturally in the ticker loop
+  });
 
   // Continuous loop
   gsap.ticker.add(() => {
@@ -47,16 +71,11 @@ document.addEventListener("DOMContentLoaded", () => {
       position -= velocity;
       velocity *= 0.94;
 
-      // New looping logic
-      // Check if we've moved past the end of the content
+      // Check for boundaries and teleport
       if (position <= -scrollWidth + offset) {
-        // Teleport the element back to the beginning to create the loop
         position += scrollWidth;
       }
-      
-      // Check if we've moved past the beginning of the content
       if (position >= offset) {
-        // Teleport the element to the end
         position -= scrollWidth;
       }
 
