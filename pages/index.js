@@ -115,3 +115,65 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+
+
+
+
+
+
+
+
+
+const currentImage = document.getElementById("image-current");
+const nextImage = document.getElementById("image-next");
+const titles = document.querySelectorAll(".article-title");
+
+let lastSrc = currentImage.src;
+let isAnimating = false;
+
+titles.forEach(title => {
+  title.addEventListener("mouseenter", () => {
+    const newSrc = title.dataset.img;
+
+    if (!newSrc || newSrc === lastSrc || isAnimating) return;
+
+    isAnimating = true;
+    lastSrc = newSrc;
+
+    // Prepare next image
+    nextImage.src = newSrc;
+    gsap.set(nextImage, {
+      scale: 1.1,
+      opacity: 0,
+      zIndex: 2,
+    });
+
+    gsap.set(currentImage, {
+      zIndex: 1
+    });
+
+    // Animate next image to zoom out and fade in
+    gsap.to(nextImage, {
+      opacity: 1,
+      scale: 1,
+      duration: 0.4,
+      ease: "power2.out",
+      onComplete: () => {
+        // Swap roles
+        currentImage.src = newSrc;
+
+        // Reset nextImage immediately after transition
+        gsap.set(nextImage, {
+          opacity: 0,
+          scale: 1.1
+        });
+
+        isAnimating = false;
+      }
+    });
+  });
+});
+
+// Initial states
+gsap.set(currentImage, { scale: 1.1, opacity: 1, zIndex: 1 });
+gsap.set(nextImage, { scale: 1.1, opacity: 0, zIndex: 2 });
