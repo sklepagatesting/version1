@@ -1,112 +1,191 @@
+
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Preloader Example</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Update</title>
+
+  <!-- Preconnect to Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- Preload the font -->
+  <link rel="preload" href="https://fonts.gstatic.com/s/inter/v12/1Pn0EnyXJmdSgbTxHLk.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <!-- Load the font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+  <!-- FontFaceObserver Script -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fontfaceobserver/2.1.0/fontfaceobserver.standalone.js"></script>
+
   <style>
-    /* Ensures the html and body are set up for full-height background */
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      overflow: hidden;
-    }
+body.preload {
+        visibility: hidden;
+        opacity: 0; }
 
-    /* Styles for the main preloader screen */
-    .preloader-screen {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100dvh;
-      background-color: black;
-      z-index: 999999999999;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      color: white;
-      font-size: 12px;
-      font-family: Arial, sans-serif;
-      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
-      transform: scale(1);
-      transition:
-        clip-path 1s cubic-bezier(.94, -0.01, 0, .99),
-        transform 1s cubic-bezier(.89, .04, 0, .99),
-        opacity 1s ease-out;
-      opacity: 1;
-    }
-
-    /* Styles for the counter element */
-    .preloader-counter {
-      transform: scale(1);
-      transition: transform 0.2s ease;
-      will-change: transform;
-    }
+    body { transition: opacity 0.2s ease-in; }
   </style>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="navbar\navbar.css">
+  <link rel="stylesheet" href="font\font.css">
+  <link rel="stylesheet" href="animations/global.css">
+  <link rel="stylesheet" href="pages\index.css">
+  <link rel="stylesheet" href="controlers\scroll.css">
+  <link rel="stylesheet" href="sections/hero.css">
+  <link rel="stylesheet" href="sections\carousel.css">
 </head>
-<body style="background-color: aliceblue; color: black;">
-HEY
-<script>
-  // Create preloader screen
-  const screen = document.createElement('div');
-  screen.classList.add('preloader-screen');
-  document.body.appendChild(screen);
 
-  // Create counter element
-  const counter = document.createElement('div');
-  counter.classList.add('preloader-counter');
-  counter.textContent = '0%';
-  screen.appendChild(counter);
+<body class="preload">
 
-  let pageContentLoaded = false;
-  let minimumTimePassed = false;
-  const MINIMUM_PRELOAD_TIME = 2000;
+  <div class="main-content text-container">
 
-  function hidePreloader() {
-    if (pageContentLoaded && minimumTimePassed) {
-      screen.style.clipPath = 'polygon(0 0, 100% 0, 100% 0, 0 0)';
-      screen.style.transform = 'scale(0)';
-      screen.style.opacity = '0';
+    <!-- 🌐 NAVIGATION BAR (Smaller) -->
+    <nav id="navbar" class="duration-300 fixed inset-x-0 top-0 z-50 h-20">
+      <div class="flex items-center justify-between h-full max-w-screen-xl mx-auto px-8">
+        <a href="index.html" class="flex items-center space-x-8">
+          <img src="https://cdn.prod.website-files.com/67ebf279c44c5fad2f90f315/67ebf279c44c5fad2f90f3ee_ctzeuvcjvyq518kr6iga-p-1080.webp" alt="Logo" class="h-5 w-auto" />
+          <span class="font-theme font-medium">SK Lepaga</span>
+        </a>
+        <button id="menu-toggle-btn" type="button" class="font-theme rounded-md hover:bg-[#e8e8e8] dark:hover:bg-[#696969] focus:outline-none" aria-controls="sidebar-multi-level-sidebar" aria-expanded="false">
+          <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path id="menu-icon-path" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
+    </nav>
 
-      if (document.body) {
-        document.body.style.overflow = '';
-      }
+    <!-- 🧭 SIDEBAR -->
+    <aside id="sidebar-multi-level-sidebar" class="fixed top-20 left-0 z-30 w-[100vw] hidden transition-[height: 100%] duration-500 bg-white dark:bg-[#242424]" style="height: calc(100vh - 3rem); overflow-y: auto;" aria-label="Sidebar">
+      <div class="h-full flex items-center justify-center px-4 py-4 max-w-4xl mx-auto">
+        <div id="sidebar-menu" class="font-theme space-y-5 flex flex-col items-center justify-center">
+          <!-- Menu Items -->
+          <div class="sidebar-menu-item flex flex-col items-center m-6">
+            <a href="home2.html" data-transition>
+              <button class="sidebar-menu-header flex items-center space-x-2 focus:outline-none">
+                <h2 class="subtext-title">CALENDAR</h2>
+              </button>
+            </a>
+          </div>
+          <!-- Repeat for other menu items... -->
+        </div>
+      </div>
+    </aside>
 
-      setTimeout(() => {
-        screen.remove();
-        // Custom event can be dispatched here if needed
-      }, 1000);
-    }
-  }
+<section class="h-[calc(var(--vh)_*_100)] w-full flex flex-col justify-between bg-white overflow-hidden">
+  <div class="w-full pt-24 sm:pt-32 md:pt-36 lg:pt-40 pb-6 px-0 z-10">
+    <div class="overflow-hidden relative w-full">
+      <div class="w-full px-8 pb-12 gap-8 flex flex-col-reverse md:flex-row">
+        
+        <!-- Left: Image and Play Reel -->
+        <div class="text-line w-full md:w-3/8 mb-8 md:mb-0 flex items-end">
+          <div class="flex flex-col justify-end">
+            <p class="mb-4 text-sm text-gray-700">Play Reel ▶</p>
 
-  // Listen for page load
-  window.addEventListener('load', () => {
-    pageContentLoaded = true;
-    hidePreloader();
-  });
+            <!-- Fixed 16:9 Responsive Sizes -->
+<div class="object-cover w-[160px] h-[90px] sm:w-[320px] sm:h-[180px] lg:w-[480px] lg:h-[270px] relative overflow-hidden">
+<img id="image-current"
+     class="absolute inset-0 w-full h-full object-cover shadow-lg will-change-transform z-10" />
+<img id="image-next"
+     class="absolute inset-0 w-full h-full object-cover shadow-lg opacity-0 pointer-events-none will-change-transform z-0" />
 
-  // Set minimum display time
-  setTimeout(() => {
-    minimumTimePassed = true;
-    hidePreloader();
-  }, MINIMUM_PRELOAD_TIME);
+</div>
 
-  // Counter animation logic
-  let count = 0;
-  const interval = setInterval(() => {
-    count += 12;
-    const currentCount = Math.min(count, 100);
-    counter.textContent = `${currentCount}%`;
 
-    const scale = 1 + (currentCount / 100);
-    counter.style.transform = `scale(${scale})`;
+          </div>
+        </div>
 
-    if (count >= 100) {
-      clearInterval(interval);
-    }
-  }, 100);
-</script>
+        <!-- Right: Article Titles -->
+        <div class="w-full md:w-5/8 flex flex-col justify-end sm:text-left md:text-left">
+          <div>
+            <div class="text-container">
+              <h1 class="text-line subtext-title text-black">NEWS AND</h1>
+            </div>
+            <div class="text-container mb-6">
+              <h1 class="text-line subtext-title text-black">ARTICLES</h1>
+            </div>
+
+            <div class="text-container mb-2">
+              <p class="text-line subtext text-black article-title"
+                 data-img="https://cdn.prod.website-files.com/67ebf279c44c5fad2f90f315/67fcf93081888d36b443f54b_APAV_OUTDOOR_LUCIANA_APAV_25NOV_THUMB-p-1600.jpg">
+                Anniversary Celebration
+              </p>
+            </div>
+
+                        <div class="text-container mb-2">
+              <p class="text-line subtext text-black article-title"
+                 data-img="https://cdn.prod.website-files.com/67ebf279c44c5fad2f90f315/67ebf279c44c5fad2f90f3ee_ctzeuvcjvyq518kr6iga.webp">
+                50th Anniversary
+              </p>
+            </div>
+
+                        <div class="text-container mb-2">
+              <p class="text-line subtext text-black article-title"
+                 data-img="https://cdn.prod.website-files.com/67ebf279c44c5fad2f90f315/67ebf279c44c5fad2f90f3e7_ytdv4dzjkhcfgd3bpcj4.webp">
+                Basketball Tournament
+              </p>
+            </div>
+
+                        <div class="text-container mb-2">
+              <p class="text-line subtext text-black article-title"
+                 data-img="https://cdn.prod.website-files.com/67ebf279c44c5fad2f90f315/6808cd6c0588a9e2f7aee4d6_MSTF_LISBON_RODHAD_1070pxl.jpg">
+                Tree Planting Event
+              </p>
+            </div>
+            <div class="text-container mb-8">
+              <p class="text-line subtext text-black article-title"
+                 data-img="https://cdn.prod.website-files.com/67ebf279c44c5fad2f90f315/67ebf279c44c5fad2f90f3de_Rectangle%2026.png">
+                Linggo ng Kabataan
+              </p>
+            </div>
+
+            <div class="text-container">
+              <a href="#" class="text-line inline-block w-fit text-black border-b border-black hover:opacity-75 transition">
+                Explore All Articles
+              </a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+
+  </div>
+
+  <!-- Script to wait for the font to load before showing the page -->
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flowbite/dist/flowbite.min.js"></script>
+
+
+  <script src="navbar\navbar.js"></script>
+
+      <script src="pages/index.js"></script>
+  <script src="animations\global.js"></script>
+    <script src="font\font.js"></script>
+    <script src="loader\loader.js"></script>
+
+
+
+
+    <script src="https://unpkg.com/gsap@3/dist/gsap.min.js"></script>
+<script src="https://unpkg.com/gsap@3/dist/ScrollTrigger.min.js"></script>
+<script src="https://unpkg.com/gsap@3/dist/gsap.min.js"></script>
+<script src="https://unpkg.com/gsap@3/dist/gsap-core.min.js"></script>
+<script src="https://unpkg.com/gsap@3/dist/ScrollTrigger.min.js"></script>
+<script src="https://unpkg.com/gsap@3/dist/gsap.min.js"></script>
+<script src="https://unpkg.com/gsap@3/dist/MotionPathPlugin.min.js"></script>
+<script src="https://unpkg.com/gsap@3/dist/ScrollToPlugin.min.js"></script>
+<script src="https://unpkg.com/gsap@3/dist/Draggable.min.js"></script>
+<script src="https://unpkg.com/gsap@3/dist/EasePack.min.js"></script>
+<script src="https://unpkg.com/gsap@3/dist/ModifiersPlugin.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 
 </body>
+
 </html>
+
