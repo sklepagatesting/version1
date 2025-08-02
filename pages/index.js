@@ -98,11 +98,12 @@ Document.addEventListener("DOMContentLoaded", () => {
       position -= velocity;
       velocity *= 0.94;
 
-      // New logic for looping and landing on the first card
-      // We check if the position is out of bounds and adjust it smoothly
-      if (position <= -scrollWidth) {
+      // New logic to handle the loop without a jolt
+      if (position < -scrollWidth) {
+        // If we've scrolled past the end, smoothly bring it back to the start
         position += scrollWidth;
-      } else if (position >= 0) {
+      } else if (position > 0) {
+        // If we've scrolled past the beginning, smoothly bring it back to the end
         position -= scrollWidth;
       }
 
