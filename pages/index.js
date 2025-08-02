@@ -61,7 +61,7 @@ tl.to(scroller, {
   }  
 }, 0);
 
-}, 3000);
+}, 2000);
 
 // Wheel input
 window.addEventListener("wheel", (e) => {
