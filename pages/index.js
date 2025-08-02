@@ -3,41 +3,72 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const scroller = document.getElementById("scroller");
 
+  // Duplicate for seamless loop
   scroller.innerHTML += scroller.innerHTML;
 
   const scrollWidth = scroller.scrollWidth / 2;
-  const offset = 25;
-  let position = offset;
+  const initialOffset = 25;
+  let position = initialOffset;
   let velocity = 0;
 
-  gsap.set(scroller, { x: offset });
+  // Set initial scroll position
+  gsap.set(scroller, { x: initialOffset });
 
-  const fastDuration = 2;
-  const fastDistance = scrollWidth * 1.5;
+  const cards = scroller.children;
 
-  gsap.to(scroller, {
-    x: `-=${fastDistance}`,
-    duration: fastDuration,
-    ease: "power4.out",
-    modifiers: {
-      x: gsap.utils.unitize(x => {
-        const raw = parseFloat(x) - offset;
-        const looped = raw % scrollWidth;
-        return looped + offset;
-      })
-    },
-    onUpdate() {
-      position = parseFloat(gsap.getProperty(scroller, "x"));
-    }
+  // Prevent scroller from collapsing
+  const cardHeight = cards[0].offsetHeight;
+  scroller.style.height = cardHeight + "px";
+  scroller.style.overflow = "hidden";
+
+  // Set initial card state (GPU-friendly)
+  gsap.set(cards, {
+    scaleY: 0,
+    transformOrigin: "bottom right",
+    willChange: "transform"
   });
 
-  // Mouse wheel input
+  // Intro animation after 3 seconds
+  setTimeout(() => {
+    const fastDuration = 2;
+    const fastDistance = scrollWidth * 1.5;
+
+    const tl = gsap.timeline({
+      onComplete: () => {
+        position = parseFloat(gsap.getProperty(scroller, "x"));
+        scroller.style.height = ""; // release height lock
+        scroller.style.overflow = ""; // restore default
+      }
+    });
+
+    // Fast scroll + scaleY grow together
+    tl.to(cards, {
+      scaleY: 1,
+      duration: 1,
+      ease: "power2.out"
+    }, 0);
+
+    tl.to(scroller, {
+      x: -=${fastDistance},
+      duration: fastDuration,
+      ease: "power4.out",
+      modifiers: {
+        x: gsap.utils.unitize(x => {
+          const raw = parseFloat(x);
+          const looped = raw % scrollWidth;
+          return looped;
+        })
+      }
+    }, 0);
+  }, 1500);
+
+  // Wheel input
   window.addEventListener("wheel", (e) => {
     velocity += e.deltaY * 0.05;
   }, { passive: true });
 
-  // --- Touch Swipe Logic ---
-  const touchScrollMultiplier = 0.17; // Increase for more sensitivity
+  // Touch input
+  const touchScrollMultiplier = 0.17;
   let startY;
   let isDraggingDown = false;
 
@@ -56,22 +87,21 @@ document.addEventListener("DOMContentLoaded", () => {
     velocity += -deltaY * touchScrollMultiplier;
     startY = currentY;
 
-    // Prevent pull-to-refresh if at the top of the page and swiping down
     if (window.scrollY === 0 && isDraggingDown) {
       e.preventDefault();
     }
   }, { passive: false });
 
-  // GSAP ticker loop
+  // Continuous scroll logic
   gsap.ticker.add(() => {
     if (Math.abs(velocity) > 0.001) {
       position -= velocity;
       velocity *= 0.94;
 
-      if (position <= -scrollWidth + offset) {
+      if (position <= -scrollWidth) {
         position += scrollWidth;
       }
-      if (position >= offset) {
+      if (position >= 0) {
         position -= scrollWidth;
       }
 
